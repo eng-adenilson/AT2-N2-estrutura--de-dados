@@ -1,0 +1,43 @@
+int main() {
+    Calculadora calc;
+    inicializaCalculadora(&calc);
+
+    const char* caminhoArquivo = "entrada.txt";
+
+    printf("Tentando abrir o arquivo: %s\n", caminhoArquivo);
+
+    FILE *file = fopen(caminhoArquivo, "r");
+    if (file == NULL) {
+        perror("Erro ao abrir o arquivo");
+        return 1;
+    }
+
+    char linha[MAX_LETRAS];
+    int expressaoNumero = 1;
+
+    while (fgets(linha, sizeof(linha), file) != NULL) {
+        linha[strcspn(linha, "\n")] = '\0'; // Remove o caractere de nova linha
+
+        if (strcmp(linha, "=") == 0) {
+            double resultado = calcularResultado(&calc);
+            printf("Resultado da expressao %d: %lf\n", expressaoNumero, resultado);
+            expressaoNumero++;
+            limparCalculadora(&calc); // Limpa a calculadora para a proxima expressao
+        } else if (strcmp(linha, "+") == 0 || strcmp(linha, "-") == 0 || strcmp(linha, "*") == 0 || strcmp(linha, "/") == 0 || strcmp(linha, "^") == 0 ||
+                   strcmp(linha, "raiz") == 0 || strcmp(linha, "sen") == 0 || strcmp(linha, "cos") == 0 || strcmp(linha, "tan") == 0 || strcmp(linha, "log") == 0) {
+            pushOperacao(&calc, linha);
+        } else {
+            double numero = strtod(linha, NULL); // Tenta converter para double
+            if (numero != 0 || linha[0] == '0') {
+                pushNumero(&calc, numero);
+            } else {
+                fprintf(stderr, "Entrada invalida: '%s'\n", linha);
+            }
+        }
+    }
+
+    fclose(file);
+    limparCalculadora(&calc);
+
+    return 0;
+}
